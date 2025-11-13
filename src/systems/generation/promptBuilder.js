@@ -199,7 +199,8 @@ export function generateTrackerInstructions(includeHtmlPrompt = true, includeCon
 
             // Add only enabled widgets
             if (widgets.date?.enabled) {
-                instructions += 'Date: [Weekday, Month, Year]\n';
+                const dateFormat = widgets.date.format || 'Weekday, Month, Year';
+                instructions += `Date: [${dateFormat}]\n`;
             }
             if (widgets.weather?.enabled) {
                 instructions += 'Weather: [Weather Emoji, Forecast]\n';
