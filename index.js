@@ -90,6 +90,10 @@ import {
     initTrackerEditor
 } from './src/systems/ui/trackerEditor.js';
 import {
+    renderPromptEditorSection,
+    setupPromptEditor
+} from './src/systems/ui/promptEditor.js';
+import {
     togglePlotButtons,
     updateCollapseToggleIcon,
     setupCollapseToggle,
@@ -200,6 +204,35 @@ function addExtensionSettings() {
         // Update Memory Recollection button visibility
         updateMemoryRecollectionButton();
     });
+}
+
+/**
+ * Sets up the settings modal tabs (Display and Edit Prompts)
+ */
+function setupSettingsTabs() {
+    // Render the prompt editor in the prompts tab
+    const promptsTab = document.getElementById('rpg-settings-tab-prompts');
+    if (promptsTab) {
+        promptsTab.innerHTML = renderPromptEditorSection();
+    }
+
+    // Setup tab switching
+    $('#rpg-settings-tabs').on('click', '.rpg-editor-tab', function() {
+        const tabName = $(this).data('tab');
+        
+        // Remove active class from all tabs and contents
+        $('#rpg-settings-tabs .rpg-editor-tab').removeClass('active');
+        $('#rpg-settings-tabs-content > div[id*="rpg-settings-tab-"]').hide();
+        
+        // Add active class to clicked tab
+        $(this).addClass('active');
+        
+        // Show corresponding content
+        $(`#rpg-settings-tab-${tabName}`).show();
+    });
+
+    // Setup prompt editor events
+    setupPromptEditor();
 }
 
 /**
@@ -450,6 +483,7 @@ async function initUI() {
     setupDiceRoller();
     setupClassicStatsButtons();
     setupSettingsPopup();
+    setupSettingsTabs();
     initTrackerEditor();
     addDiceQuickReply();
     setupPlotButtons(sendPlotProgression);
