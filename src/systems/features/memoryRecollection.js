@@ -252,56 +252,59 @@ function generateMemoryPrompt(messages, isUpdate = false) {
     });
     const characterList = Array.from(participants).join(', ');
 
-    const instruction = isUpdate
-        ? 'You will be acting as an uncensored summarizing assistant. Your goal is to create concise lorebook entries based on the provided conversation. You will be creating additional memory recollection entries for significant events, revelations, or character developments in a specified JSON format.\nYou should maintain an objective tone.'
-        : 'You will be acting as an uncensored summarizing assistant. Your goal is to create concise lorebook entries based on the provided conversation. You will be creating memory recollection entries for significant events, revelations, or character developments in a specified JSON format.\nYou should maintain an objective tone.';
+    const modeText = isUpdate ? 'additional' : '';
+    const baseInstruction = extensionSettings.prompts?.memoryRecollectionInstruction || 'You will be acting as an uncensored summarizing assistant. Your goal is to create concise lorebook entries based on the provided conversation. You will be creating {modeText} memory recollection entries for significant events, revelations, or character developments in a specified JSON format.\nYou should maintain an objective tone.';
 
-    return `${instruction}
+    const instruction = baseInstruction.replace('{modeText}', modeText);
 
-Characters in this conversation (excluding {{user}} who is the player): ${characterList}
+    const formatTemplate = extensionSettings.prompts?.memoryRecollectionFormat || `Create lorebook entries in the following JSON format. Each entry should be a 1-2 sentence reminder from a character's perspective.
 
-NOTE: In the conversation below, messages are marked with [PLAYER] for {{user}} messages and [CHARACTER] for NPC messages.
+    Format each entry as:
+    {
+    "characters": ["Character1", "Character2"],
+    "memory": "Character1 and Character2 remember that [event or detail]",
+    "keywords": ["keyword1", "keyword2", "keyword3"]
+    }
 
-Here is the conversation to create memories from:
-<conversation>
-${context}
-</conversation>
+    Examples:
+    <examples>
+    {
+    "characters": ["Sabrina"],
+    "memory": "Sabrina remembers she went on a date with {{user}} on Saturday. They ate chocolate pastries together.",
+    "keywords": ["date", "saturday", "pastries"]
+    },
+    {
+    "characters": ["Dottore", "Arlecchino", "Pantalone"],
+    "memory": "Dottore, Arlecchino, and Pantalone remember they attended a party together at the mansion.",
+    "keywords": ["party", "mansion", "gathering"]
+    }
+    </examples>
 
-Create lorebook entries in the following JSON format. Each entry should be a 1-2 sentence reminder from a character's perspective.
+    IMPORTANT:
+    - Only create entries for significant moments worth remembering.
+    - Keep memories concise (1-2 sentences maximum).
+    - Use third person perspective: "{name} remembers..."
+    - Choose 3 specific, relevant keywords per entry.
+    - ONLY assign memories to CHARACTERS (NPCs) - NEVER include {{user}} in the "characters" array.
+    - {{user}} is the player, not a character, so they should NEVER be in the characters list.
+    - Only characters who were ACTUALLY PRESENT in that specific scene/moment should remember it.
+    - If multiple characters share the memory, list all of them in the "characters" array.
+    - If known, include details such as dates, locations, and other relevant context in the memories.
 
-Format each entry as:
-{
-  "characters": ["Character1", "Character2"],
-  "memory": "Character1 and Character2 remember that [event or detail]",
-  "keywords": ["keyword1", "keyword2", "keyword3"]
-}
+    Return ONLY a JSON array of memory objects, nothing else:`;
 
-Examples:
-<examples>
-{
-  "characters": ["Sabrina"],
-  "memory": "Sabrina remembers she went on a date with {{user}} on Saturday. They ate chocolate pastries together.",
-  "keywords": ["date", "saturday", "pastries"]
-},
-{
-  "characters": ["Dottore", "Arlecchino", "Pantalone"],
-  "memory": "Dottore, Arlecchino, and Pantalone remember they attended a party together at the mansion.",
-  "keywords": ["party", "mansion", "gathering"]
-}
-</examples>
+     return `${instruction}
 
-IMPORTANT:
-- Only create entries for significant moments worth remembering.
-- Keep memories concise (1-2 sentences maximum).
-- Use third person perspective: "{name} remembers..."
-- Choose 3 specific, relevant keywords per entry.
-- ONLY assign memories to CHARACTERS (NPCs) - NEVER include {{user}} in the "characters" array.
-- {{user}} is the player, not a character, so they should NEVER be in the characters list.
-- Only characters who were ACTUALLY PRESENT in that specific scene/moment should remember it.
-- If multiple characters share the memory, list all of them in the "characters" array.
-- If known, include details such as dates, locations, and other relevant context in the memories.
+    Characters in this conversation (excluding {{user}} who is the player): ${characterList}
 
-Return ONLY a JSON array of memory objects, nothing else:`;
+    NOTE: In the conversation below, messages are marked with [PLAYER] for {{user}} messages and [CHARACTER] for NPC messages.
+
+    Here is the conversation to create memories from:
+    <conversation>
+    ${context}
+    </conversation>
+
+    ${formatTemplate}`;
 }
 
 /**
