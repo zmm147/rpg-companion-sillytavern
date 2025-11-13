@@ -158,12 +158,12 @@ export function onGenerationStarted(type, data) {
 
         // Inject HTML prompt separately at depth 0 if enabled (prevents duplication on swipes)
         if (extensionSettings.enableHtmlPrompt) {
-            const htmlPrompt = `\nIf appropriate, include inline HTML, CSS, and JS elements for creative, visual storytelling throughout your response:
+            const htmlPrompt = `\n${extensionSettings.prompts?.htmlPrompt || `If appropriate, include inline HTML, CSS, and JS elements for creative, visual storytelling throughout your response:
 - Use them liberally to depict any in-world content that can be visualized (screens, posters, books, signs, letters, logos, crests, seals, medallions, labels, etc.), with creative license for animations, 3D effects, pop-ups, dropdowns, websites, and so on.
 - Style them thematically to match the theme (e.g., sleek for sci-fi, rustic for fantasy), ensuring text is visible.
 - Embed all resources directly (e.g., inline SVGs) so nothing relies on external fonts or libraries.
 - Place elements naturally in the narrative where characters would see or use them, with no limits on format or application.
-- These HTML/CSS/JS elements must be rendered directly without enclosing them in code fences.`;
+- These HTML/CSS/JS elements must be rendered directly without enclosing them in code fences.`}`;
 
             setExtensionPrompt('rpg-companion-html', htmlPrompt, extension_prompt_types.IN_CHAT, 0, false);
             // console.log('[RPG Companion] Injected HTML prompt at depth 0 for together mode');
@@ -176,14 +176,14 @@ export function onGenerationStarted(type, data) {
         const contextSummary = generateContextualSummary();
 
         if (contextSummary) {
-            const wrappedContext = `Here is context information about the current scene, and what follows is the last message in the chat history:
+            const contextWrapperTemplate = extensionSettings.prompts?.separateContextWrapper || `Here is context information about the current scene, and what follows is the last message in the chat history:
 <context>
-${contextSummary}
+{contextSummary}
 
 Ensure these details naturally reflect and influence the narrative. Character behavior, dialogue, and story events should acknowledge these conditions when relevant, such as fatigue affecting performance, low hygiene influencing social interactions, environmental factors shaping the scene, or a character's emotional state coloring their responses.
-</context>
+</context>`;
 
-`;
+            const wrappedContext = contextWrapperTemplate.replace('{contextSummary}', contextSummary) + '\n\n';
 
             // Inject context at depth 1 (before last user message) as SYSTEM
             setExtensionPrompt('rpg-companion-context', wrappedContext, extension_prompt_types.IN_CHAT, 1, false);
@@ -195,12 +195,12 @@ Ensure these details naturally reflect and influence the narrative. Character be
 
         // Inject HTML prompt separately at depth 0 if enabled (same as together mode pattern)
         if (extensionSettings.enableHtmlPrompt) {
-            const htmlPrompt = `\nIf appropriate, include inline HTML, CSS, and JS elements for creative, visual storytelling throughout your response:
+            const htmlPrompt = `\n${extensionSettings.prompts?.htmlPrompt || `If appropriate, include inline HTML, CSS, and JS elements for creative, visual storytelling throughout your response:
 - Use them liberally to depict any in-world content that can be visualized (screens, posters, books, signs, letters, logos, crests, seals, medallions, labels, etc.), with creative license for animations, 3D effects, pop-ups, dropdowns, websites, and so on.
 - Style them thematically to match the theme (e.g., sleek for sci-fi, rustic for fantasy), ensuring text is visible.
 - Embed all resources directly (e.g., inline SVGs) so nothing relies on external fonts or libraries.
 - Place elements naturally in the narrative where characters would see or use them, with no limits on format or application.
-- These HTML/CSS/JS elements must be rendered directly without enclosing them in code fences.`;
+- These HTML/CSS/JS elements must be rendered directly without enclosing them in code fences.`}`;
 
             setExtensionPrompt('rpg-companion-html', htmlPrompt, extension_prompt_types.IN_CHAT, 0, false);
             // console.log('[RPG Companion] Injected HTML prompt at depth 0 for separate mode');
