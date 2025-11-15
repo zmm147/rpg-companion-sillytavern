@@ -160,7 +160,8 @@ export function parseResponse(responseText) {
     debugLog('[RPG Parser] Removed thinking tags, new length:', cleanedResponse.length + ' chars');
 
     // Extract code blocks
-    const codeBlockRegex = /```([^`]+)```/g;
+    // Use non-greedy matching to capture each block separately, even if they contain content with different formatting
+    const codeBlockRegex = /```([\s\S]*?)```/g;
     const matches = [...cleanedResponse.matchAll(codeBlockRegex)];
 
     debugLog('[RPG Parser] Found', matches.length + ' code blocks');
