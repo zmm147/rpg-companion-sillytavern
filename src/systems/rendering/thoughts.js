@@ -157,7 +157,7 @@ export function renderThoughts() {
         debugLog(`[RPG Thoughts] Processing line ${lineNumber}:`, line);
 
         // Check if line ends with " - [Name]" pattern (happens when AI appends character name to Thoughts line)
-        const nameAtEndMatch = line.match(/\s-\s+([A-Za-z'\s]+)$/);
+        const nameAtEndMatch = line.match(/\s-\s+([A-Za-z'\s()]+)$/);
         if (nameAtEndMatch) {
             const nameAtEnd = nameAtEndMatch[1].trim();
             if (nameAtEnd && nameAtEnd.toLowerCase() !== 'unavailable' && !nameAtEnd.toLowerCase().includes('and')) {
