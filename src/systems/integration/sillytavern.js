@@ -4,7 +4,7 @@
  */
 
 import { getContext } from '../../../../../../extensions.js';
-import { chat, user_avatar, setExtensionPrompt, extension_prompt_types } from '../../../../../../../script.js';
+import { chat, user_avatar, setExtensionPrompt, extension_prompt_types, updateMessageBlock } from '../../../../../../../script.js';
 
 // Core modules
 import {
@@ -166,16 +166,9 @@ export async function onMessageReceived(data) {
             renderInventory();
             renderQuests();
 
-            // Then update the DOM to reflect the cleaned message
-            const lastMessageElement = $('#chat').children('.mes').last();
-            if (lastMessageElement.length) {
-                const messageText = lastMessageElement.find('.mes_text');
-                if (messageText.length) {
-                    messageText.html(substituteParams(cleanedMessage.trim()));
-                }
-            }
-
-            // console.log('[RPG Companion] Cleaned message, removed tracker code blocks from DOM');
+            // Note: We intentionally do NOT update the DOM here
+            // This keeps the original AI response visible (including tracker blocks)
+            // while the internal message data is cleaned for context/history purposes
 
             // Save to chat metadata
             saveChatData();
