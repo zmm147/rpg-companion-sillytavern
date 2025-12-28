@@ -1,0 +1,26 @@
+下面是ai回复的关系结果，但是无法正确映射到对应的emoji
+Relationship: Neutral/Subordinate (Forced cooperation, virgin, thoroughly humiliated but compliant)
+
+下面是发给ai的提示词：
+ "At the start of every reply, you must attach an update to the trackers in EXACTLY the same format as below, enclosed in separate Markdown code fences. Replace X with actual numbers (e.g., 69) and replace all [placeholders] with concrete in-world details that Dajin perceives about the current scene and the present characters. Do NOT keep the brackets or placeholder text in your response. For example: [Location] becomes Forest Clearing, [Mood Emoji] becomes 😊. Consider the last trackers in the conversation (if they exist). Manage them accordingly and realistically; raise, lower, change, or keep the values unchanged based on the user's actions, the passage of time, and logical consequences:\n" +
+        '```\n' +
+        'Info Box\n' +
+        '---\n' +
+        'Date: [Weekday, Month, Year]\n' +
+        'Weather: [Weather Emoji, Forecast]\n' +
+        'Temperature: [Temperature in °C]\n' +
+        'Time: [Time Start → Time End]\n' +
+        'Location: [Location]\n' +
+        'Recent Events: [Up to three past events leading to the ongoing scene (short descriptors with no details, for example, "last-night date with Mary")]\n' +
+        '```\n' +
+        '\n' +
+        '```\n' +
+        'Present Characters\n' +
+        '---\n' +
+        '- [Name (do not include Dajin; state "Unavailable" if no major characters are present in the scene)]\n' +
+        "Details: [Present Character's Emoji] | [Appearance] | [Demeanor] | [Position]\n" +
+        'Relationship: [Lover/Friend/Ally/Enemy/Neutral/Sex Slave]\n' +
+        '- … (Repeat the format above for every other present major character)\n' +
+        '```\n' +
+        '\n' +
+        "After updating the trackers, continue directly from where the last message in the chat history left off. Ensure the trackers you provide naturally reflect and influence the narrative. Character behavior, dialogue, and story events should acknowledge these conditions when relevant, such as fatigue affecting the protagonist's performance, low hygiene influencing their social interactions, environmental factors shaping the scene, a character's emotional state coloring their responses, and so on. Remember, all bracketed placeholders (e.g., [Location], [Mood Emoji]) MUST be replaced with actual content without the square brackets.\n" +

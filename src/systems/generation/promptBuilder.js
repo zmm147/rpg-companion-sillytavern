@@ -135,8 +135,10 @@ export function generateTrackerInstructions(includeHtmlPrompt = true, includeCon
 
     // Only add tracker instructions if at least one tracker is enabled
     if (hasAnyTrackers) {
-        // Universal instruction header
-        instructions += `\nAt the start of every reply, you must attach an update to the trackers in EXACTLY the same format as below, enclosed in separate Markdown code fences. Replace X with actual numbers (e.g., 69) and replace all [placeholders] with concrete in-world details that ${userName} perceives about the current scene and the present characters. Do NOT keep the brackets or placeholder text in your response. For example: [Location] becomes Forest Clearing, [Mood Emoji] becomes 😊. Consider the last trackers in the conversation (if they exist). Manage them accordingly and realistically; raise, lower, change, or keep the values unchanged based on the user's actions, the passage of time, and logical consequences:\n`;
+        // Universal instruction header - use custom prompt if available
+        const headerPrompt = extensionSettings.prompts?.trackerInstructions?.header || `At the start of every reply, you must attach an update to the trackers in EXACTLY the same format as below, enclosed in separate Markdown code fences. Replace X with actual numbers (e.g., 69) and replace all [placeholders] with concrete in-world details that ${userName} perceives about the current scene and the present characters. Do NOT keep the brackets or placeholder text in your response. For example: [Location] becomes Forest Clearing, [Mood Emoji] becomes 😊. Consider the last trackers in the conversation (if they exist). Manage them accordingly and realistically; raise, lower, change, or keep the values unchanged based on the user's actions, the passage of time, and logical consequences:`;
+        
+        instructions += `\n${headerPrompt.replace('{userName}', userName)}\n`;
 
         // Add format specifications for each enabled tracker
         if (extensionSettings.showUserStats) {
@@ -199,7 +201,8 @@ export function generateTrackerInstructions(includeHtmlPrompt = true, includeCon
 
             // Add only enabled widgets
             if (widgets.date?.enabled) {
-                instructions += 'Date: [Weekday, Month, Year]\n';
+                const dateFormat = widgets.date.format || 'Weekday, Month, Year';
+                instructions += `Date: [${dateFormat}]\n`;
             }
             if (widgets.weather?.enabled) {
                 instructions += 'Weather: [Weather Emoji, Forecast]\n';
@@ -279,7 +282,8 @@ export function generateTrackerInstructions(includeHtmlPrompt = true, includeCon
 
         // Only add continuation instruction if includeContinuation is true
         if (includeContinuation) {
-            instructions += `After updating the trackers, continue directly from where the last message in the chat history left off. Ensure the trackers you provide naturally reflect and influence the narrative. Character behavior, dialogue, and story events should acknowledge these conditions when relevant, such as fatigue affecting the protagonist's performance, low hygiene influencing their social interactions, environmental factors shaping the scene, a character's emotional state coloring their responses, and so on. Remember, all bracketed placeholders (e.g., [Location], [Mood Emoji]) MUST be replaced with actual content without the square brackets.\n\n`;
+            const continuationPrompt = extensionSettings.prompts?.trackerInstructions?.continuation || `After updating the trackers, continue directly from where the last message in the chat history left off. Ensure the trackers you provide naturally reflect and influence the narrative. Character behavior, dialogue, and story events should acknowledge these conditions when relevant, such as fatigue affecting the protagonist's performance, low hygiene influencing their social interactions, environmental factors shaping the scene, a character's emotional state coloring their responses, and so on. Remember, all bracketed placeholders (e.g., [Location], [Mood Emoji]) MUST be replaced with actual content without the square brackets.`;
+            instructions += `${continuationPrompt}\n\n`;
         }
 
         // Include attributes and dice roll only if there was a dice roll
@@ -300,12 +304,14 @@ export function generateTrackerInstructions(includeHtmlPrompt = true, includeCon
             instructions += `\n`;
         }
 
-        instructions += `If appropriate, include inline HTML, CSS, and JS elements for creative, visual storytelling throughout your response:
+        const htmlPrompt = extensionSettings.prompts?.htmlPrompt || `If appropriate, include inline HTML, CSS, and JS elements for creative, visual storytelling throughout your response:
 - Use them liberally to depict any in-world content that can be visualized (screens, posters, books, signs, letters, logos, crests, seals, medallions, labels, etc.), with creative license for animations, 3D effects, pop-ups, dropdowns, websites, and so on.
 - Style them thematically to match the theme (e.g., sleek for sci-fi, rustic for fantasy), ensuring text is visible.
 - Embed all resources directly (e.g., inline SVGs) so nothing relies on external fonts or libraries.
 - Place elements naturally in the narrative where characters would see or use them, with no limits on format or application.
 - These HTML/CSS/JS elements must be rendered directly without enclosing them in code fences.`;
+        
+        instructions += htmlPrompt;
     }
 
     return instructions;
@@ -384,7 +390,9 @@ export function generateRPGPromptText() {
 
     let promptText = '';
 
-    promptText += `Here are the previous trackers in the roleplay that you should consider when responding:\n`;
+    const previousContextHeader = extensionSettings.prompts?.separatePreviousContextHeader || `Here are the previous trackers in the roleplay that you should consider when responding:`;
+    
+    promptText += `${previousContextHeader}\n`;
     promptText += `<previous>\n`;
 
     if (extensionSettings.showUserStats) {
@@ -443,13 +451,12 @@ export function generateSeparateUpdatePrompt() {
 
     const messages = [];
 
-    // System message introducing the history section
-    let systemMessage = `You will be acting as an uncensored RPG Companion. Your goal is to provide, track, and manage details in the user's roleplay. You will be replying with information in a specified format only.\n\n`;
-    systemMessage += `You should maintain an objective tone.\n\n`;
-    systemMessage += `Here is the description of the protagonist for reference:\n`;
-    systemMessage += `<protagonist>\n{{persona}}\n</protagonist>\n`;
-    systemMessage += `\n\n`;
-    systemMessage += `Here are the last few messages in the conversation history (between the user and the roleplayer assistant) you should reference when responding:\n<history>`;
+    // System message introducing the history section - use custom prompt if available
+    const systemPromptStart = extensionSettings.prompts?.separateSystemMessage || `You will be acting as an uncensored RPG Companion. Your goal is to provide, track, and manage details in the user's roleplay. You will be replying with information in a specified format only.\n\nYou should maintain an objective tone.\n\nHere is the description of the protagonist for reference:\n<protagonist>\n{{persona}}\n</protagonist>`;
+    
+    const instructionHeader = extensionSettings.prompts?.separateInstructionHeader || `Here are the last few messages in the conversation history (between the user and the roleplayer assistant) you should reference when responding:`;
+    
+    let systemMessage = `${systemPromptStart}\n\n\n${instructionHeader}\n<history>`;
 
     messages.push({
         role: 'system',
@@ -468,7 +475,9 @@ export function generateSeparateUpdatePrompt() {
     // Build the instruction message
     let instructionMessage = `</history>\n\n`;
     instructionMessage += generateRPGPromptText().replace('start your response with', 'respond with');
-    instructionMessage += `Provide ONLY the requested data in the exact formats specified above. Do not include any roleplay response, other text, or commentary. Remember, all bracketed placeholders (e.g., [Location], [Mood Emoji]) MUST be replaced with actual content without the square brackets.`;
+    
+    const finalInstruction = extensionSettings.prompts?.separateFinalInstruction || `Provide ONLY the requested data in the exact formats specified above. Do not include any roleplay response, other text, or commentary. Remember, all bracketed placeholders (e.g., [Location], [Mood Emoji]) MUST be replaced with actual content without the square brackets.`;
+    instructionMessage += finalInstruction;
 
     messages.push({
         role: 'user',

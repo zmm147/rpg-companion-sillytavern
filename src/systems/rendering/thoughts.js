@@ -156,6 +156,19 @@ export function renderThoughts() {
 
         debugLog(`[RPG Thoughts] Processing line ${lineNumber}:`, line);
 
+        // Check if line ends with " - [Name]" pattern (happens when AI appends character name to Thoughts line)
+        const nameAtEndMatch = line.match(/\s-\s+([A-Za-z'\s()]+)$/);
+        if (nameAtEndMatch) {
+            const nameAtEnd = nameAtEndMatch[1].trim();
+            if (nameAtEnd && nameAtEnd.toLowerCase() !== 'unavailable' && !nameAtEnd.toLowerCase().includes('and')) {
+                debugLog(`[RPG Thoughts] Found character name at end of line: ${nameAtEnd}`);
+                currentCharacter = { name: nameAtEnd };
+                presentCharacters.push(currentCharacter);
+                debugLog(`[RPG Thoughts] ✓ Started new character from end-of-line pattern: ${nameAtEnd}`);
+                continue; // Skip further processing for this line
+            }
+        }
+
         // Check if this is a character name line (starts with "- ")
         if (line.trim().startsWith('- ')) {
             const name = line.trim().substring(2).trim();
@@ -354,8 +367,31 @@ export function renderThoughts() {
                 if (hasRelationshipEnabled) {
                     // In the new format, relationship is always stored in char.Relationship
                     if (char.Relationship) {
-                        // Try to map text to emoji
-                        relationshipBadge = relationshipEmojis[char.Relationship] || char.Relationship;
+                        // Try exact match first
+                        if (relationshipEmojis[char.Relationship]) {
+                            relationshipBadge = relationshipEmojis[char.Relationship];
+                        } else {
+                            // Fuzzy match: check if Relationship starts with or contains a known type
+                            const relationshipText = char.Relationship.toLowerCase().trim();
+                            let matched = false;
+
+                            for (const [key, emoji] of Object.entries(relationshipEmojis)) {
+                                const keyLower = key.toLowerCase();
+                                // Check if starts with this relationship type
+                                // Or if the first word before "/" or "(" matches
+                                const firstWord = relationshipText.split(/[\/\(\s]/)[0].trim();
+                                if (relationshipText.startsWith(keyLower) || firstWord === keyLower) {
+                                    relationshipBadge = emoji;
+                                    matched = true;
+                                    break;
+                                }
+                            }
+
+                            // If still no match, keep the default emoji
+                            if (!matched) {
+                                debugLog(`[RPG Thoughts] No emoji match for relationship: ${char.Relationship}, using default`);
+                            }
+                        }
                     }
                 }
 
