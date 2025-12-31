@@ -31,6 +31,9 @@ import { renderThoughts, updateChatThoughts } from '../rendering/thoughts.js';
 import { renderInventory } from '../rendering/inventory.js';
 import { renderQuests } from '../rendering/quests.js';
 
+// Features
+import { processActionSuggestions } from '../features/actionSuggestions.js';
+
 // Utils
 import { getSafeThumbnailUrl } from '../../utils/avatars.js';
 
@@ -125,7 +128,8 @@ export async function onMessageReceived(data) {
             lastMessage.extra.rpg_companion_swipes[currentSwipeId] = {
                 userStats: parsedData.userStats,
                 infoBox: parsedData.infoBox,
-                characterThoughts: parsedData.characterThoughts
+                characterThoughts: parsedData.characterThoughts,
+                actionSuggestions: parsedData.actionSuggestions
             };
 
             // console.log('[RPG Companion] Stored RPG data for swipe', currentSwipeId);
@@ -146,6 +150,9 @@ export async function onMessageReceived(data) {
             cleanedMessage = cleanedMessage.replace(/```[^`]*?Stats\s*\n\s*---[^`]*?```\s*/gi, '');
             cleanedMessage = cleanedMessage.replace(/```[^`]*?Info Box\s*\n\s*---[^`]*?```\s*/gi, '');
             cleanedMessage = cleanedMessage.replace(/```[^`]*?Present Characters\s*\n\s*---[^`]*?```\s*/gi, '');
+            // Remove Action Suggestions code block
+            cleanedMessage = cleanedMessage.replace(/```[^`]*?Action Suggestions?\s*\n\s*---[^`]*?```\s*/gi, '');
+            cleanedMessage = cleanedMessage.replace(/```[^`]*?Suggested Actions?\s*\n\s*---[^`]*?```\s*/gi, '');
             // Remove any stray "---" dividers that might appear after the code blocks
             cleanedMessage = cleanedMessage.replace(/^\s*---\s*$/gm, '');
             // Clean up multiple consecutive newlines
@@ -165,6 +172,16 @@ export async function onMessageReceived(data) {
             renderThoughts();
             renderInventory();
             renderQuests();
+
+            // Process action suggestions and render buttons in the message
+            if (parsedData.actionSuggestions && extensionSettings.enableActionSuggestions) {
+                // Find the message element in the DOM
+                const messageIndex = chat.length - 1;
+                const messageElement = document.querySelector(`#chat .mes[mesid="${messageIndex}"]`);
+                if (messageElement) {
+                    processActionSuggestions(messageElement, parsedData.actionSuggestions, messageIndex);
+                }
+            }
 
             // Note: We intentionally do NOT update the DOM here
             // This keeps the original AI response visible (including tracker blocks)
@@ -340,6 +357,7 @@ export function clearExtensionPrompts() {
     setExtensionPrompt('rpg-companion-example', '', extension_prompt_types.IN_CHAT, 0, false);
     setExtensionPrompt('rpg-companion-html', '', extension_prompt_types.IN_CHAT, 0, false);
     setExtensionPrompt('rpg-companion-context', '', extension_prompt_types.IN_CHAT, 1, false);
+    setExtensionPrompt('rpg-companion-actions', '', extension_prompt_types.IN_CHAT, 0, false);
     // Note: rpg-companion-plot is not cleared here since it's passed via quiet_prompt option
     // console.log('[RPG Companion] Cleared all extension prompts');
 }

@@ -121,6 +121,12 @@ import { setupClassicStatsButtons } from './src/systems/features/classicStats.js
 import { ensureHtmlCleaningRegex, detectConflictingRegexScripts } from './src/systems/features/htmlCleaning.js';
 import { setupMemoryRecollectionButton, updateMemoryRecollectionButton } from './src/systems/features/memoryRecollection.js';
 import { initLorebookLimiter } from './src/systems/features/lorebookLimiter.js';
+import {
+    renderActionButtonsInMessage,
+    processActionSuggestions,
+    updateActionSuggestionsVisibility,
+    clearAllActionSuggestions
+} from './src/systems/features/actionSuggestions.js';
 
 // Integration modules
 import {
@@ -353,6 +359,12 @@ async function initUI() {
         togglePlotButtons();
     });
 
+    $('#rpg-toggle-action-suggestions').on('change', function() {
+        extensionSettings.enableActionSuggestions = $(this).prop('checked');
+        saveSettings();
+        updateActionSuggestionsVisibility();
+    });
+
     $('#rpg-toggle-animations').on('change', function() {
         extensionSettings.enableAnimations = $(this).prop('checked');
         saveSettings();
@@ -444,6 +456,7 @@ async function initUI() {
     $('#rpg-toggle-always-show-bubble').prop('checked', extensionSettings.alwaysShowThoughtBubble);
     $('#rpg-toggle-html-prompt').prop('checked', extensionSettings.enableHtmlPrompt);
     $('#rpg-toggle-plot-buttons').prop('checked', extensionSettings.enablePlotButtons);
+    $('#rpg-toggle-action-suggestions').prop('checked', extensionSettings.enableActionSuggestions);
     $('#rpg-toggle-animations').prop('checked', extensionSettings.enableAnimations);
     $('#rpg-stat-bar-color-low').val(extensionSettings.statBarColorLow);
     $('#rpg-stat-bar-color-high').val(extensionSettings.statBarColorHigh);

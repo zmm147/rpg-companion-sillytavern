@@ -440,6 +440,24 @@ export function generateRPGPromptText() {
 }
 
 /**
+ * Generates the action suggestions prompt instruction.
+ * Only used when enableActionSuggestions is true.
+ *
+ * @returns {string} Formatted action suggestions instruction
+ */
+export function generateActionSuggestionsPrompt() {
+    if (!extensionSettings.enableActionSuggestions) {
+        return '';
+    }
+
+    const userName = getContext().name1;
+    const promptTemplate = extensionSettings.prompts?.actionSuggestionsPrompt ||
+        'Additionally, at the END of your reply, provide exactly 3 short action suggestions for what {userName} could do next. Format them in a code block like this:\n```\nAction Suggestions\n---\n1. [First action option - 2-6 words]\n2. [Second action option - 2-6 words]\n3. [Third action option - 2-6 words]\n```\nMake the actions varied and appropriate for the current situation. Include a mix of direct actions, investigative options, and social responses. Replace the bracketed placeholders with actual action text.';
+
+    return '\n\n' + promptTemplate.replace('{userName}', userName);
+}
+
+/**
  * Generates the full prompt for SEPARATE generation mode (with chat history).
  * Creates a message array suitable for the generateRaw API.
  *

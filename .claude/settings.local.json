@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nfeat: 添加行动建议功能 (Action Suggestions)\n\n- 新增 enableActionSuggestions 设置选项\n- 在 AI 回复末尾注入行动建议提示词模板\n- AI 生成 3 个可选行动建议\n- 解析并移除 AI 回复中的 Action Suggestions 代码块\n- 在 AI 消息下方渲染可点击的行动按钮\n- 点击按钮自动发送对应文本给 AI\n- 支持在提示词编辑器中自定义提示词模板\n- 添加相关样式，支持水平按钮布局\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n)\")"
     ],
     "deny": [],
     "ask": []

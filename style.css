@@ -6790,4 +6790,105 @@ body:has(.rpg-panel.rpg-position-left) #sheld {
     }
 }
 
+/* ============================================
+   ACTION SUGGESTIONS (In-Message Buttons)
+   ============================================ */
+
+/* Action Suggestions Container in Chat Messages */
+.rpg-message-action-suggestions {
+    display: block;
+    padding: 12px 15px;
+    margin-top: 15px;
+    background: var(--SmartThemeBlurTintColor, rgba(26, 26, 46, 0.7));
+    border-radius: 10px;
+    border: 1px solid var(--SmartThemeBorderColor, rgba(74, 123, 167, 0.5));
+    backdrop-filter: blur(5px);
+}
+
+/* Action Header */
+.rpg-action-header {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--SmartThemeQuoteColor, #e94560);
+    margin-bottom: 10px;
+    white-space: nowrap;
+}
+
+.rpg-action-header i {
+    font-size: 14px;
+}
+
+/* Action Buttons Container */
+.rpg-action-buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 8px;
+    width: 100%;
+}
+
+/* Action Button Styling */
+.rpg-action-btn {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    min-width: fit-content;
+    max-width: 100%;
+    background: linear-gradient(135deg,
+        var(--SmartThemeBlurTintColor, rgba(26, 26, 46, 0.9)),
+        var(--black30a, rgba(22, 33, 62, 0.9)));
+    border: 1px solid var(--SmartThemeBorderColor, rgba(74, 123, 167, 0.6));
+    border-radius: 8px;
+    color: var(--SmartThemeBodyColor, #eaeaea);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    text-orientation: mixed;
+}
+
+.rpg-action-btn:hover {
+    background: linear-gradient(135deg,
+        var(--SmartThemeQuoteColor, #e94560),
+        var(--black30a, rgba(22, 33, 62, 0.9)));
+    border-color: var(--SmartThemeQuoteColor, #e94560);
+    box-shadow: 0 0 15px rgba(233, 69, 96, 0.3);
+    transform: translateY(-2px);
+    color: #fff;
+}
+
+.rpg-action-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 0 8px rgba(233, 69, 96, 0.2);
+}
+
+/* Mobile-specific styles for action suggestions */
+@media (max-width: 1000px) {
+    .rpg-message-action-suggestions {
+        padding: 10px 12px;
+        margin-top: 12px;
+    }
+
+    .rpg-action-buttons {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .rpg-action-btn {
+        padding: 10px 14px;
+        font-size: 14px;
+        width: 100%;
+        white-space: normal;
+    }
+}
+
+
 

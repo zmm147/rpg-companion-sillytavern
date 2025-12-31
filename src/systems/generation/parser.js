@@ -145,7 +145,8 @@ export function parseResponse(responseText) {
     const result = {
         userStats: null,
         infoBox: null,
-        characterThoughts: null
+        characterThoughts: null,
+        actionSuggestions: null
     };
 
     // DEBUG: Log full response for troubleshooting
@@ -229,6 +230,13 @@ export function parseResponse(responseText) {
                 // Fallback: look for new multi-line format patterns
                 (content.match(/^-\s+\w+/m) && content.match(/Details:/i));
 
+            // Match Action Suggestions section
+            const isActionSuggestions =
+                content.match(/Action Suggestions?\s*\n\s*---/i) ||
+                content.match(/Suggested Actions?\s*\n\s*---/i) ||
+                // Fallback: look for numbered action list pattern
+                (content.match(/^1\.\s+\w+/m) && content.match(/^2\.\s+\w+/m) && content.match(/^3\.\s+\w+/m));
+
             if (isStats && !result.userStats) {
                 result.userStats = stripBrackets(content);
                 debugLog('[RPG Parser] ✓ Matched: Stats section');
@@ -239,6 +247,10 @@ export function parseResponse(responseText) {
                 result.characterThoughts = stripBrackets(content);
                 debugLog('[RPG Parser] ✓ Matched: Present Characters section');
                 debugLog('[RPG Parser] Full content:', content);
+            } else if (isActionSuggestions && !result.actionSuggestions) {
+                result.actionSuggestions = content;
+                debugLog('[RPG Parser] ✓ Matched: Action Suggestions section');
+                debugLog('[RPG Parser] Actions content:', content);
             } else {
                 debugLog('[RPG Parser] ✗ No match - checking patterns:');
                 debugLog('[RPG Parser]   - Has "Stats\\n---"?', !!content.match(/Stats\s*\n\s*---/i));
@@ -255,6 +267,7 @@ export function parseResponse(responseText) {
     debugLog('[RPG Parser] Found Stats:', !!result.userStats);
     debugLog('[RPG Parser] Found Info Box:', !!result.infoBox);
     debugLog('[RPG Parser] Found Characters:', !!result.characterThoughts);
+    debugLog('[RPG Parser] Found Action Suggestions:', !!result.actionSuggestions);
     debugLog('[RPG Parser] =======================================================');
 
     return result;
@@ -459,4 +472,63 @@ export function isInfoBoxSection(content) {
  */
 export function isCharacterThoughtsSection(content) {
     return content.match(/Present Characters\s*\n\s*---/i) !== null || content.includes(" | ");
+}
+
+/**
+ * Parses action suggestions from the raw code block content.
+ * Extracts numbered action items (1. action, 2. action, 3. action)
+ *
+ * @param {string} actionsText - The raw action suggestions text from AI response
+ * @returns {string[]} Array of action suggestions (max 3)
+ */
+export function parseActionSuggestions(actionsText) {
+    if (!actionsText) return [];
+
+    debugLog('[RPG Parser] Parsing action suggestions:', actionsText);
+
+    const actions = [];
+
+    // Try to match numbered list format: 1. action, 2. action, 3. action
+    const numberedPattern = /^\s*(\d+)\.\s*(.+?)$/gm;
+    let match;
+
+    while ((match = numberedPattern.exec(actionsText)) !== null) {
+        const actionText = match[2].trim();
+        if (actionText && actionText.length > 0 && actionText.length < 200) {
+            // Remove any trailing punctuation and brackets
+            const cleaned = actionText
+                .replace(/\[.*?\]/g, '') // Remove bracketed placeholders
+                .replace(/^["\s]+|["\s]+$/g, '') // Remove quotes and whitespace
+                .trim();
+
+            if (cleaned.length > 0) {
+                actions.push(cleaned);
+            }
+        }
+
+        if (actions.length >= 3) break;
+    }
+
+    // Fallback: try bullet point format (- action)
+    if (actions.length === 0) {
+        const bulletPattern = /^\s*[-•*]\s*(.+?)$/gm;
+        while ((match = bulletPattern.exec(actionsText)) !== null) {
+            const actionText = match[1].trim();
+            if (actionText && actionText.length > 0 && actionText.length < 200) {
+                const cleaned = actionText
+                    .replace(/\[.*?\]/g, '')
+                    .replace(/^["\s]+|["\s]+$/g, '')
+                    .trim();
+
+                if (cleaned.length > 0) {
+                    actions.push(cleaned);
+                }
+            }
+
+            if (actions.length >= 3) break;
+        }
+    }
+
+    debugLog('[RPG Parser] Parsed actions:', actions);
+    return actions;
 }

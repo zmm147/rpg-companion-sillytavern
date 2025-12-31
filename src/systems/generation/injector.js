@@ -17,7 +17,8 @@ import { parseUserStats } from './parser.js';
 import {
     generateTrackerExample,
     generateTrackerInstructions,
-    generateContextualSummary
+    generateContextualSummary,
+    generateActionSuggestionsPrompt
 } from './promptBuilder.js';
 
 /**
@@ -171,6 +172,18 @@ export function onGenerationStarted(type, data) {
             // Clear HTML prompt if disabled
             setExtensionPrompt('rpg-companion-html', '', extension_prompt_types.IN_CHAT, 0, false);
         }
+
+        // Inject action suggestions prompt if enabled
+        if (extensionSettings.enableActionSuggestions) {
+            const actionSuggestionsPrompt = generateActionSuggestionsPrompt();
+            if (actionSuggestionsPrompt) {
+                setExtensionPrompt('rpg-companion-actions', actionSuggestionsPrompt, extension_prompt_types.IN_CHAT, 0, false);
+                // console.log('[RPG Companion] Injected action suggestions prompt at depth 0');
+            }
+        } else {
+            // Clear action suggestions prompt if disabled
+            setExtensionPrompt('rpg-companion-actions', '', extension_prompt_types.IN_CHAT, 0, false);
+        }
     } else if (extensionSettings.generationMode === 'separate') {
         // In SEPARATE mode, inject the contextual summary for main roleplay generation
         const contextSummary = generateContextualSummary();
@@ -209,6 +222,16 @@ Ensure these details naturally reflect and influence the narrative. Character be
             setExtensionPrompt('rpg-companion-html', '', extension_prompt_types.IN_CHAT, 0, false);
         }
 
+        // Inject action suggestions prompt if enabled (same as together mode)
+        if (extensionSettings.enableActionSuggestions) {
+            const actionSuggestionsPrompt = generateActionSuggestionsPrompt();
+            if (actionSuggestionsPrompt) {
+                setExtensionPrompt('rpg-companion-actions', actionSuggestionsPrompt, extension_prompt_types.IN_CHAT, 0, false);
+            }
+        } else {
+            setExtensionPrompt('rpg-companion-actions', '', extension_prompt_types.IN_CHAT, 0, false);
+        }
+
         // Clear together mode injections
         setExtensionPrompt('rpg-companion-inject', '', extension_prompt_types.IN_CHAT, 0, false);
         setExtensionPrompt('rpg-companion-example', '', extension_prompt_types.IN_CHAT, 0, false);
@@ -217,5 +240,6 @@ Ensure these details naturally reflect and influence the narrative. Character be
         setExtensionPrompt('rpg-companion-inject', '', extension_prompt_types.IN_CHAT, 0, false);
         setExtensionPrompt('rpg-companion-example', '', extension_prompt_types.IN_CHAT, 0, false);
         setExtensionPrompt('rpg-companion-context', '', extension_prompt_types.IN_CHAT, 1, false);
+        setExtensionPrompt('rpg-companion-actions', '', extension_prompt_types.IN_CHAT, 0, false);
     }
 }
